@@ -1,0 +1,207 @@
+---
+title: "1_Database_240805"
+author: "Arturo Bertero"
+date: "2024-08-05"
+output: html_document
+---
+
+# Libraries
+
+```{r}
+#packages
+library("pacman")
+p_load(tidyverse, here, sjlabelled, stringr, glue, janitor, haven, stargazer, 
+       ltm, skimr, readxl, naniar, conflicted)
+
+#remove scientific notation
+options(scipen=999)
+
+#conflicts
+conflict_prefer("select", "dplyr")
+conflict_prefer("filter", "dplyr")
+```
+
+# Input
+
+```{r}
+#Load original data
+
+#response_original =  read_dta(here("Input", "data", "v1.0_ResPOnsE_COVID_19_W1-W6_ENGLISH.dta"))  %>% 
+#  clean_names()
+
+##saveRDS for github
+#saveRDS(response_original, here("Input", "data", "v1.0_ResPOnsE_COVID_19_W1-W6_ENGLISH.rds"))
+
+#Load data as rds
+response_original = read_rds(here("Input", "data", "v1.0_ResPOnsE_COVID_19_W1-W6_ENGLISH.rds"))
+```
+
+# Processing
+
+## Data manag of W5
+20 October to 15 December 2022
+```{r}
+#Select, mutate, rename variables
+W5 = response_original %>% 
+    filter(info_wave==5) %>% 
+     select(c(s1,s2,s9,c1,k1,#sociodem
+              k2, #l-r
+              pe7_01,pe7_02,pe7_03,pe7_04, j1, #cultural
+              t1,t2,t3,t4_2,pe11 #economic
+              )) %>% 
+          mutate(across(s1:pe11, ~replace(., .>97 , NA))) %>% 
+          mutate(s1 = replace(s1, s1>2, NA)) %>% 
+            rename(
+              sex = s1,
+              age = s2,
+              educ = s9,
+              income = c1,
+              p_int = k1,
+              l_r = k2,
+              c_adopt = pe7_01,
+              c_abort = pe7_02,
+              c_eutha = pe7_03,
+              c_marri = pe7_04,
+              c_immig = j1,
+              e_redis = t1,
+              e_flatt = t2,
+              e_mwage = t3,
+              e_citin = t4_2,
+              e_busin = pe11)
+
+#missing map
+miss_map_W5 = vis_miss(W5) #67.3% present
+
+#na.omit
+W5 = na.omit(W5) #from 9273 to 1348; but t1, t2, t3, t4 were only shown to 2253 people
+
+# Recode polarity: high values = rightist preferences/high sociodemog
+W5 = W5 %>% 
+  mutate(sex = ifelse(sex==2, 0, 1), #man = 1; woman = 0
+         across(p_int, ~ 5 - .),
+         across(income, ~ 5 - .),
+         across(c_adopt, ~ 5 - .),
+         across(c_eutha, ~ 5 - .),
+         across(c_marri, ~ 5 - .),
+         across(c_immig, ~ 11 - .),
+         across(e_redis, ~ 7 - .),
+         across(e_mwage, ~ 7 - .),
+         across(e_citin, ~ 7 - .))
+
+#Check here for descriptives
+
+# Standardize attitudinal variables
+W5 = W5 %>% 
+  mutate(across(c(c_adopt:e_busin), ~ scale(.) %>% as.vector))
+
+#Recode sociodem as factors 
+W5 = W5 %>%
+  mutate(sex_c = case_when(sex==0 ~ "Female",
+                         sex==1 ~ "Male"),
+         educ_c = case_when(educ<=6 ~ "Less than university",
+                          educ>6 ~ "Degree or more"), 
+         p_int_c = case_when(p_int<=3 ~ "Low",
+                             p_int>=4 ~ "High"), 
+         income_c = case_when(income<=2 ~ "Low",
+                             income>=3 ~ "High")) 
+
+#Reorder dataset
+IPBS = W5 %>% 
+  select(c(
+    "sex","sex_c","age","educ","educ_c","income","income_c","p_int", "p_int_c","l_r", #sociodem
+    "c_adopt","c_abort","c_eutha","c_marri","c_immig", #cultural
+    "e_redis","e_flatt","e_mwage","e_citin","e_busin")) #economic
+
+```
+
+## Partitions
+
+### By educ
+
+```{r}
+#Select
+IPBS_educ = IPBS %>% 
+  select(c_adopt:e_busin,
+         educ_c)
+
+#Split
+IPBS_educ = IPBS_educ %>% 
+  group_split(educ_c, .keep = F)
+
+educ_low = IPBS_educ[[2]]  #low: 812
+educ_high = IPBS_educ[[1]] #high: 536
+
+#descriptives
+#stargazer(as.data.frame(educ_low), type = "text", nobs = TRUE)
+#stargazer(as.data.frame(educ_high), type = "text", nobs = TRUE)
+```
+
+### By income
+
+```{r}
+#Select and listwise
+IPBS_income = IPBS %>% 
+  dplyr::select(c_adopt:e_busin,
+         income_c)
+
+#Split
+IPBS_income = IPBS_income %>% 
+  group_split(income_c, .keep = F)
+
+income_low = IPBS_income[[2]]  #low: 611
+income_high = IPBS_income[[1]] #high: 737
+
+#descriptives
+#stargazer(as.data.frame(income_low), type = "text", nobs = TRUE)
+#stargazer(as.data.frame(income_high), type = "text", nobs = TRUE)
+```
+
+### By p_int
+
+```{r}
+#Pint in 3
+
+#Select and listwise
+IPBS_p_int = IPBS %>% 
+  select(c_adopt:e_busin,
+         p_int_c)
+
+#Split
+IPBS_p_int = IPBS_p_int %>% 
+  group_split(p_int_c, .keep = F)
+
+p_int_high = IPBS_p_int[[1]]  #256
+p_int_low = IPBS_p_int[[2]] #1092
+
+#descriptives
+#stargazer(as.data.frame(polint_low_and_midlow), type = "text", nobs = TRUE)
+#stargazer(as.data.frame(pol_int_midhigh), type = "text", nobs = TRUE)
+#stargazer(as.data.frame(pol_int_high), type = "text", nobs = TRUE)
+```
+
+# Output
+```{r}
+#Save data_full
+data_full = IPBS
+saveRDS(data_full, here("Input", "data_full.rds"))
+
+#Save IPBS
+IPBS = data_full %>% 
+  select(c_adopt:e_busin)
+saveRDS(IPBS, here("Input", "IPBS.rds"))
+
+#Save educ partitions
+save(educ_low,educ_high, 
+     file = here("Input", "Partitions", "educ_partitions.RData"))
+
+#Save income partitions
+save(income_high, income_low, 
+     file = here("Input", "Partitions", "income_partitions.RData"))
+
+#Save for Moderated network model
+IPBS_m = data_full %>% 
+  select(c_adopt:e_busin, l_r)
+save(IPBS_m, file = here("Input", "IPBS_m.rds"))
+
+```
+
