@@ -114,6 +114,32 @@ IPBS = W5 %>%
 
 ```
 
+```{r}
+#descriptives on mean l-r of rightist, leftist and 5SM supporters
+descriptives = response_original %>% 
+  filter(info_wave==5) %>% 
+     select(c(k6, k2)) %>% 
+        mutate(k6 = replace(k6, k6>13, NA),
+               k2 = replace(k2, k2>97, NA)) %>% 
+            mutate(
+               k6 = case_when(
+                          k6==2 | k6==3 | k6==5 | k6==11 ~ "Dx",
+                          k6==4 ~ "M5S",
+                          k6==1 | k6==6 | k6==7 | k6==10 ~ "Sin",
+                          k6==8 | k6==9 | k6==12 ~ "Other")) %>% 
+                  na.omit()
+
+#mean and sd of l-r self-placement for the three biggest coalitions
+desc_df = descriptives %>% 
+  group_by(k6) %>% 
+  summarise(
+    mean = mean(k2),
+    median = median(k2),
+    sd = sd(k2))
+
+#dx: 8; m5s: 3; sin = 2; other = 5
+```
+
 ## Partitions
 
 ### By educ
@@ -201,7 +227,7 @@ save(income_high, income_low,
 #Save for Moderated network model
 IPBS_m = data_full %>% 
   select(c_adopt:e_busin, l_r)
-save(IPBS_m, file = here("Input", "IPBS_m.rds"))
+saveRDS(IPBS_m, file = here("Input", "IPBS_m.rds"))
 
 ```
 
