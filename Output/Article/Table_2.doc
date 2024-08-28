@@ -1,0 +1,39 @@
+<table style="border-collapse:collapse; border:none;">
+<tr>
+<th style="border-top: double; text-align:center; font-style:italic; font-weight:normal; padding:0.2cm; border-bottom:1px solid black; text-align:left; ">Model</th>
+<th style="border-top: double; text-align:center; font-style:italic; font-weight:normal; padding:0.2cm; border-bottom:1px solid black; ">CFI</th>
+<th style="border-top: double; text-align:center; font-style:italic; font-weight:normal; padding:0.2cm; border-bottom:1px solid black; ">TLI</th>
+<th style="border-top: double; text-align:center; font-style:italic; font-weight:normal; padding:0.2cm; border-bottom:1px solid black; ">AIC</th>
+<th style="border-top: double; text-align:center; font-style:italic; font-weight:normal; padding:0.2cm; border-bottom:1px solid black; ">BIC</th>
+<th style="border-top: double; text-align:center; font-style:italic; font-weight:normal; padding:0.2cm; border-bottom:1px solid black; ">RMSEA</th>
+<th style="border-top: double; text-align:center; font-style:italic; font-weight:normal; padding:0.2cm; border-bottom:1px solid black; col7">SRMR</th>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">sum_uni</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">0.74</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">0.67</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">35217.35</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">35321.48</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">0.15</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; col7">0.10</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">sum_bi_th</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">0.88</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">0.84</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">34645.07</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">34754.40</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">0.10</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; col7">0.07</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; border-bottom: double; ">sum_tri</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; border-bottom: double; ">0.90</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; border-bottom: double; ">0.86</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; border-bottom: double; ">34545.14</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; border-bottom: double; ">34664.89</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; border-bottom: double; ">0.10</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; border-bottom: double; col7">0.06</td>
+</tr>
+</table>
+

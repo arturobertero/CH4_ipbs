@@ -1,0 +1,258 @@
+---
+title: "2_EGA_H1_H2_240805"
+author: "Arturo Bertero"
+date: "2024-08-05"
+output: html_document
+---
+
+# Libraries
+
+```{r}
+#packages
+library("pacman")
+p_load(tidyverse, here, sjlabelled, stringr, glue, janitor, haven, stargazer, 
+       ltm, skimr, readxl, naniar, conflicted, EGAnet, qgraph, lavaan, psychTools,
+       psychonetrics, lavaanPlot, DiagrammeRsvg, rsvg)
+
+#remove scientific notation
+options(scipen=999)
+
+#conflicts
+conflict_prefer("select", "dplyr")
+conflict_prefer("filter", "dplyr")
+```
+
+# Input
+
+```{r}
+# Import attitudes
+IPBS = readRDS((here("Input", "IPBS.rds")))
+```
+
+# Processing
+
+## H1: EGA
+
+```{r}
+#1: Fit EGA
+ega_results = EGA(IPBS, model = "glasso", algorithm = "walktrap")
+
+# summary
+summary(ega_results)
+```
+
+```{r}
+# Objects
+shortnames_10 = names(IPBS)
+longnames_10 <- c("Adoption for homosexual couples",
+            "Abortion",
+            "Euthanasia",
+            "Legalization of same-sex marriage",
+            "Immigrants",
+            "Reduce income differences",
+            "Flat tax",
+            "Minimum wage",
+            "Citizenship income",
+            "Aid to business")
+
+ega_groups = list(
+ "Cultural attitudes"=c(1,4,5),
+ "Economic attitudes"=c(6,8,9,10),
+ "Mixed dimension"=c(2,3,7))
+
+ega_colors <- c("#966FD6", "#008B8B", "#C23B22")
+
+# save plot
+EGA_plot = qgraph(ega_results$network, layout = 'spring',
+            labels = shortnames_10, nodeNames = longnames_10,  
+            groups = ega_groups, color = ega_colors, 
+            legend=T, legend.cex = 0.33, 
+            theme= "Borkulo",
+            borders = T, vsize=7.0, esize = 15, GLratio = 2,
+            filetype="png",  
+            filename=here("Output", "Article", "Figure_2"))
+
+```
+
+
+```{r}
+# 2: hierarchical EGA
+ega_hie = hierEGA(IPBS)
+
+# summary of hierEGA
+summary(ega_hie)
+```
+
+```{r}
+# 3: EGA with best fit
+ega_fit = EGA.fit(IPBS, model = "glasso",
+                  algorithm = "walktrap")
+summary(ega_fit)
+```
+
+```{r}
+# 4: stability
+ega_boot = bootEGA(data = IPBS, seed = 1, ncores = 8, iter = 10000)
+
+# summary 
+summary(ega_boot)
+
+# plot comparison
+ega_compare <- compare.EGA.plots(
+  ega_results, ega_boot, 
+  labels = c("Empirical", "Bootstrap"))
+
+# Set the file path using here()
+file_path <- here("Output", "Supplement", "Fig_1.png")
+
+# Save the plot as a high-resolution PNG
+png(filename = file_path, width = 4000, height = 4000, res = 600)
+ega_compare <- compare.EGA.plots(
+  ega_results, ega_boot, 
+  labels = c("Empirical", "Bootstrap"),
+  plot.args = list(
+    edge.color = c("blue","red")))
+dev.off()
+
+# stability plot
+file_path <- here("Output", "Supplement", "Fig_2.png")
+png(filename = file_path, width = 4000, height = 4000, res = 600)
+dimensionStability(ega_boot)
+dev.off()
+```
+
+### Comparison with CFA
+
+```{r}
+# mono-dimensional cfa
+uni_model <- '
+  Ideology =~ c_adopt + c_abort + c_eutha + c_marri + c_immig + e_redis + 
+  e_flatt + e_mwage + e_citin + e_busin'
+
+# Fit the unidimensional model
+fit_uni <- cfa(uni_model, data = IPBS)
+
+# Print the summary of the unidimensional model fit
+sum_uni = summary(fit_uni, fit.measures = TRUE)
+
+# Plot
+labels = list(Ideology = "Political Ideology", 
+              c_adopt = "Adoption for homosexual couples", 
+              c_abort = "Abortion", 
+              c_eutha = "Euthanasia",
+              c_marri = "Legalization of same-sex marriage",
+              c_immig = "Immigrants",
+              e_redis = "Reduce income differences",
+              e_flatt = "Flat tax",
+              e_mwage = "Minimum wage",
+              e_citin = "Citizenship income",
+              e_busin = "Aid to business")
+
+monodim_CFA = lavaanPlot(fit_uni, coefs = TRUE, labels = labels,
+                         graph_options = list(rankdir = "LR"))
+
+# save
+file_path <- here("Output", "Supplement", "CFA", "monodim_CFA.png")
+save_png(plot = monodim_CFA, path = file_path)
+```
+
+```{r}
+# bi dimensional cfa (theory)
+bi_model_th <- '
+  Cultural =~ c_adopt + c_abort + c_eutha + c_marri + c_immig  
+  Economic =~  e_redis + e_mwage + e_citin + e_busin + e_flatt'
+
+# Fit the unidimensional model
+fit_bi_th <- cfa(bi_model_th, data = IPBS)
+
+# Print the summary of the unidimensional model fit
+sum_bi_th = summary(fit_bi_th, fit.measures = TRUE)
+
+# Plot
+labels = list(Cultural = "Cultural Dimension",
+              Economic = "Economic Dimension",
+              c_adopt = "Adoption for homosexual couples", 
+              c_abort = "Abortion", 
+              c_eutha = "Euthanasia",
+              c_marri = "Legalization of same-sex marriage",
+              c_immig = "Immigrants",
+              e_redis = "Reduce income differences",
+              e_flatt = "Flat tax",
+              e_mwage = "Minimum wage",
+              e_citin = "Citizenship income",
+              e_busin = "Aid to business")
+
+bidim_th_CFA = lavaanPlot(fit_bi_th, coefs = TRUE, labels = labels,
+                         graph_options = list(rankdir = "LR"))
+
+# save
+file_path <- here("Output", "Supplement", "CFA", "bidim_th_CFA.png")
+save_png(plot = bidim_th_CFA, path = file_path)
+```
+
+
+```{r}
+# tri dimensional cfa (EGA)
+tri_model <- '
+  Cultural =~ c_adopt + c_marri + c_immig  
+  Mixed =~ c_abort + c_eutha + e_flatt
+  Economic =~  e_redis + e_mwage + e_citin + e_busin'
+
+# Fit the unidimensional model
+fit_tri <- cfa(tri_model, data = IPBS)
+
+# Print the summary of the unidimensional model fit
+sum_tri = summary(fit_tri, fit.measures = TRUE)
+
+# Plot
+labels = list(Cultural = "Cultural Dimension",
+              Mixed = "Mixed issues",
+              Economic = "Economic Dimension",
+              c_adopt = "Adoption for homosexual couples", 
+              c_abort = "Abortion", 
+              c_eutha = "Euthanasia",
+              c_marri = "Legalization of same-sex marriage",
+              c_immig = "Immigrants",
+              e_redis = "Reduce income differences",
+              e_flatt = "Flat tax",
+              e_mwage = "Minimum wage",
+              e_citin = "Citizenship income",
+              e_busin = "Aid to business")
+
+tridim_CFA = lavaanPlot(fit_tri, coefs = TRUE, labels = labels,
+                         graph_options = list(rankdir = "LR"))
+
+# save
+file_path <- here("Output", "Supplement", "CFA", "tridim_CFA.png")
+save_png(plot = tridim_CFA, path = file_path)
+```
+
+```{r}
+# Define the function to extract fit indices
+fit_indices <- function(fit) {
+  indices <- fitMeasures(fit, c("cfi", "tli", "aic", "bic", "rmsea", "srmr"))
+  return(indices)
+}
+
+# Extract fit indices for each model
+fit_uni_indices <- fit_indices(fit_uni)
+fit_bi_th_indices <- fit_indices(fit_bi_th)
+fit_tri_indices <- fit_indices(fit_tri)
+
+# Combine the fit indices into a data frame
+sum_CFA <- data.frame(
+  Model = c("sum_uni", "sum_bi_th", "sum_tri"),
+  CFI   = c(fit_uni_indices["cfi"], fit_bi_th_indices["cfi"], fit_tri_indices["cfi"]),
+  TLI   = c(fit_uni_indices["tli"], fit_bi_th_indices["tli"], fit_tri_indices["tli"]),
+  AIC   = c(fit_uni_indices["aic"], fit_bi_th_indices["aic"], fit_tri_indices["aic"]),
+  BIC   = c(fit_uni_indices["bic"], fit_bi_th_indices["bic"], fit_tri_indices["bic"]),
+  RMSEA = c(fit_uni_indices["rmsea"], fit_bi_th_indices["rmsea"], fit_tri_indices["rmsea"]),
+  SRMR =  c(fit_uni_indices["srmr"], fit_bi_th_indices["srmr"], fit_tri_indices["srmr"])
+)
+
+#Export
+sjPlot::tab_df(sum_CFA, file = here("Output", "Article", "Table_2.doc"))
+```
+
+
+

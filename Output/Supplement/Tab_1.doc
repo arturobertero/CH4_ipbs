@@ -1,0 +1,88 @@
+<table style="border-collapse:collapse; border:none;">
+<tr>
+<th style="border-top: double; text-align:center; font-style:italic; font-weight:normal; padding:0.2cm; border-bottom:1px solid black; text-align:left; ">variable_name</th>
+<th style="border-top: double; text-align:center; font-style:italic; font-weight:normal; padding:0.2cm; border-bottom:1px solid black; ">mean</th>
+<th style="border-top: double; text-align:center; font-style:italic; font-weight:normal; padding:0.2cm; border-bottom:1px solid black; ">SD</th>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">sex</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">0.53</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">0.50</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">age</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">52.88</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">15.70</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">educ</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">6.38</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">2.36</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">income</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">2.52</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">0.61</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">p_int</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">2.87</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">0.77</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">l_r</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">4.47</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">3.00</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">c_adopt</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">2.20</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">1.13</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">c_abort</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">1.67</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">0.93</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">c_eutha</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">1.70</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">0.92</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">c_marri</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">1.93</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">1.04</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">c_immig</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">5.06</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">2.64</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">e_redis</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">2.58</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">1.59</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">e_flatt</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">2.62</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">1.75</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">e_mwage</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">2.20</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">1.43</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">e_citin</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">2.92</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; ">1.67</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; border-bottom: double; ">e_busin</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; border-bottom: double; ">4.68</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center; border-bottom: double; ">1.83</td>
+</tr>
+</table>
+

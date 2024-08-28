@@ -1,0 +1,1007 @@
+---
+title: "3_mgm_H3_H4_240806"
+author: "Arturo Bertero"
+date: "2024-08-06"
+output: html_document
+---
+
+# Libraries
+
+```{r}
+#packages
+library("pacman")
+p_load(tidyverse, here, sjlabelled, stringr, glue, janitor, haven, stargazer, 
+       ltm, skimr, readxl, naniar, conflicted, EGAnet, qgraph, lavaan, psychTools,
+       mgm, NetworkComparisonTest, bootnet, ggplot2, hrbrthemes, patchwork, huge)
+
+#remove scientific notation
+options(scipen=999)
+
+#conflicts
+conflict_prefer("select", "dplyr")
+conflict_prefer("filter", "dplyr")
+```
+
+# Input
+
+```{r}
+# Import partitions
+load((here("Input", "Partitions", "educ_partitions.RData")))
+load((here("Input", "Partitions", "income_partitions.RData")))
+load((here("Input", "Partitions", "p_int_partitions.RData")))
+
+#partitions as matrix
+educ_low = as.matrix(educ_low)
+educ_high = as.matrix(educ_high)
+income_low = as.matrix(income_low)
+income_high = as.matrix(income_high)
+p_int_low = as.matrix(p_int_low)
+p_int_high = as.matrix(p_int_high)
+
+# data for moderated network model
+IPBS = readRDS((here("Input", "IPBS_m.rds")))
+
+#Fast running (run [0] or skip [1] bootnet and NCT)
+fast_running = 1
+```
+
+```{r}
+#network objects
+shortnames_10 = c("c_adopt","c_abort","c_eutha","c_marri","c_immig","e_redis",
+                  "e_flatt","e_mwage","e_citin","e_busin")
+
+shortnames_11 = names(IPBS)
+
+longnames_10 <- c("Adoption for homosexual couples",
+            "Abortion",
+            "Euthanasia",
+            "Legalization of same-sex marriage",
+            "Immigrants",
+            "Reduce income differences",
+            "Flat tax",
+            "Minimum wage",
+            "Citizenship income",
+            "Aid to business")
+
+longnames_11 <- c("Adoption for homosexual couples",
+            "Abortion",
+            "Euthanasia",
+            "Legalization of same-sex marriage",
+            "Immigrants",
+            "Reduce income differences",
+            "Flat tax",
+            "Minimum wage",
+            "Citizenship income",
+            "Aid to business",
+            "Left-right self-placement")
+
+#colors
+mgm_groups = list(
+ "Cultural attitudes"=c(1,4,5),
+ "Economic attitudes"=c(6,8,9,10),
+ "Mixed dimension"=c(2,3,7))
+
+mgm_colors <- c("#966FD6", "#008B8B", "#C23B22")
+
+
+```
+
+# Processing
+
+## H2
+
+### Models
+
+```{r}
+########
+##educ##
+########
+
+#educ_low
+mgm_educ_low = mgm(educ_low, type = rep("g",10), 
+              level = rep(1, 10), lambdaSel = "EBIC", ruleReg = "OR")
+
+#predictability
+pred_educ_low <- predict(object = mgm_educ_low, 
+                    data = educ_low, 
+                    errorCon = 'R2')
+
+#plot
+graph_educ_low<-qgraph(mgm_educ_low$pairwise$wadj, layout = 'spring',
+            labels = shortnames_10, nodeNames = longnames_10,  
+            groups = mgm_groups, color = mgm_colors, 
+            legend=T, legend.cex = 0.33, 
+            edge.color=mgm_educ_low$pairwise$edgecolor_cb,
+            borders = T, vsize=7.0, esize = 15, GLratio = 2,
+            pie = pred_educ_low$errors[,2], pieColor = rep('#FFFF00',10),
+            filetype="png",  
+            filename=here("Output", "Supplement", "stratified_plots", "educ_low"))
+
+#educ_high
+mgm_educ_high = mgm(educ_high, type = rep("g",10), 
+              level = rep(1, 10), lambdaSel = "EBIC", ruleReg = "OR")
+
+#predictability
+pred_educ_high <- predict(object = mgm_educ_high, 
+                    data = educ_high, 
+                    errorCon = 'R2')
+
+#plot
+graph_educ_high<-qgraph(mgm_educ_high$pairwise$wadj, layout = graph_educ_low$layout,
+            labels = shortnames_10, nodeNames = longnames_10,  
+            groups = mgm_groups, color = mgm_colors, 
+            legend=T, legend.cex = 0.33, 
+            edge.color=mgm_educ_high$pairwise$edgecolor_cb,
+            borders = T, vsize=7.0, esize = 15, GLratio = 2,
+            pie = pred_educ_high$errors[,2], pieColor = rep('#FFFF00',10),
+            filetype="png",  
+            filename=here("Output", "Supplement", "stratified_plots", "educ_high"))
+
+########
+#income#
+########
+
+#income_low
+mgm_income_low = mgm(income_low, type = rep("g",10), 
+              level = rep(1, 10), lambdaSel = "EBIC", ruleReg = "OR")
+
+#predictability
+pred_income_low <- predict(object = mgm_income_low, 
+                    data = income_low, 
+                    errorCon = 'R2')
+
+#plot
+graph_income_low<-qgraph(mgm_income_low$pairwise$wadj, layout = graph_educ_low$layout,
+            labels = shortnames_10, nodeNames = longnames_10,  
+            groups = mgm_groups, color = mgm_colors, 
+            legend=T, legend.cex = 0.33, 
+            edge.color=mgm_income_low$pairwise$edgecolor_cb,
+            borders = T, vsize=7.0, esize = 15, GLratio = 2,
+            pie = pred_income_low$errors[,2], pieColor = rep('#FFFF00',10),
+            filetype="png",  
+            filename=here("Output", "Supplement", "stratified_plots", "income_low"))
+
+#income_high
+mgm_income_high = mgm(income_high, type = rep("g",10), 
+              level = rep(1, 10), lambdaSel = "EBIC", ruleReg = "OR")
+
+#predictability
+pred_income_high <- predict(object = mgm_income_high, 
+                    data = income_high, 
+                    errorCon = 'R2')
+
+#plot
+graph_income_high<-qgraph(mgm_income_high$pairwise$wadj, layout = graph_educ_low$layout,
+            labels = shortnames_10, nodeNames = longnames_10,  
+            groups = mgm_groups, color = mgm_colors, 
+            legend=T, legend.cex = 0.33, 
+            edge.color=mgm_income_high$pairwise$edgecolor_cb,
+            borders = T, vsize=7.0, esize = 15, GLratio = 2,
+            pie = pred_income_high$errors[,2], pieColor = rep('#FFFF00',10),
+            filetype="png",  
+            filename=here("Output", "Supplement", "stratified_plots", "income_high"))
+
+#########
+##p_int##
+#########
+
+#p_int_low
+mgm_p_int_low = mgm(p_int_low, type = rep("g",10), 
+              level = rep(1, 10), lambdaSel = "EBIC", ruleReg = "OR")
+
+#predictability
+pred_p_int_low <- predict(object = mgm_p_int_low, 
+                    data = p_int_low, 
+                    errorCon = 'R2')
+
+#plot
+graph_p_int_low<-qgraph(mgm_p_int_low$pairwise$wadj, layout = graph_educ_low$layout,
+            labels = shortnames_10, nodeNames = longnames_10,  
+            groups = mgm_groups, color = mgm_colors, 
+            legend=T, legend.cex = 0.33, 
+            edge.color=mgm_p_int_low$pairwise$edgecolor_cb,
+            borders = T, vsize=7.0, esize = 15, GLratio = 2,
+            pie = pred_p_int_low$errors[,2], pieColor = rep('#FFFF00',10),
+            filetype="png",  
+            filename=here("Output", "Supplement", "stratified_plots", "p_int_low"))
+
+#p_int_high
+mgm_p_int_high = mgm(p_int_high, type = rep("g",10), 
+              level = rep(1, 10), lambdaSel = "EBIC", ruleReg = "OR")
+
+#predictability
+pred_p_int_high <- predict(object = mgm_p_int_high, 
+                    data = p_int_high, 
+                    errorCon = 'R2')
+
+#plot
+graph_p_int_high<-qgraph(mgm_p_int_high$pairwise$wadj, layout = graph_educ_low$layout,
+            labels = shortnames_10, nodeNames = longnames_10,  
+            groups = mgm_groups, color = mgm_colors, 
+            legend=T, legend.cex = 0.33, 
+            edge.color=mgm_p_int_high$pairwise$edgecolor_cb,
+            borders = T, vsize=7.0, esize = 15, GLratio = 2,
+            pie = pred_p_int_high$errors[,2], pieColor = rep('#FFFF00',10),
+            filetype="png",  
+            filename=here("Output", "Supplement", "stratified_plots", "p_int_high"))
+```
+### R2
+
+#### Tab r2
+
+```{r}
+#Gather df
+pred_df = tibble(
+  Variable = pred_educ_low$errors[,1],
+  educ_low = pred_educ_low$errors[,2],
+  educ_high = pred_educ_high$errors[,2],
+  income_low = pred_income_low$errors[,2],
+  income_high = pred_income_high$errors[,2],
+  p_int_low = pred_p_int_low$errors[,2],
+  p_int_high = pred_p_int_high$errors[,2]
+  )
+
+# Table to the supplement
+sjPlot::tab_df(pred_df, file = here("Output", "Supplement", "Tab_2.doc"))
+
+#sum_df
+sum_pred_df = tibble(
+  sum_educ = sum(pred_df$educ_high) - sum(pred_df$educ_low),
+  sum_income = sum(pred_df$income_high) - sum(pred_df$income_low),
+  sum_p_int = sum(pred_df$p_int_high) - sum(pred_df$income_low)
+)
+
+```
+
+#### Graph r2
+
+```{r}
+# Reshape the data
+plot_data <- pred_df %>%
+  rename(pint_high = p_int_high, pint_low = p_int_low) %>%
+  pivot_longer(cols = -Variable, names_to = "group", values_to = "value") %>%
+  separate(group, into = c("type", "group"), sep = "_")
+
+# Function to create plots
+create_plot <- function(data, type) {
+  data_wide <- data %>%
+    pivot_wider(names_from = group, values_from = value) %>%
+    arrange(desc(high)) %>%
+    mutate(Variable = factor(Variable, levels = unique(Variable)))
+  
+  ggplot(data_wide) +
+    geom_segment(aes(x = Variable, xend = Variable, y = low, yend = high), color = "grey") +
+    geom_point(aes(x = Variable, y = low, color = "Low Group"), size = 3) +
+    geom_point(aes(x = Variable, y = high, color = "High Group"), size = 3) +
+    coord_flip() +
+    scale_color_manual(values = c("Low Group" = "#966FD6B3", "High Group" = "#008B8BB3")) + 
+    theme_ipsum() +
+    theme(
+      legend.position = "bottom",
+      axis.title.y = element_text(size = 14, face = "bold"),
+      plot.title = element_text(hjust = 0.5),
+      legend.title = element_text(size = 12, face = "bold")
+    ) +
+    xlab("") +
+    ylab("R2") +
+    labs(
+      title = paste(type),
+      color = "Group"
+    )
+}
+
+# Filter and plot for income
+plot_income <- create_plot(plot_data %>% filter(type == "income"), "Income")
+
+# Filter and plot for education
+plot_educ <- create_plot(plot_data %>% filter(type == "educ"), "Education")
+
+# Filter and plot for political interest
+plot_pint <- create_plot(plot_data %>% filter(type == "pint"), "Political Interest")
+
+# Print the plots
+plot_income
+plot_educ
+plot_pint
+
+```
+```{r}
+# Summarize data
+sum_data <- plot_data %>%
+  group_by(type, group) %>%
+  summarise(total_value = mean(value, na.rm = TRUE)) %>%
+  ungroup()
+
+# Define the colors
+colors <- c("low" = "#966FD6B3", "high" = "#008B8BB3")
+
+# Update labels for the type variable
+sum_data$type <- factor(sum_data$type, levels = c("educ", "income", "pint"), labels = c("Education", "Income", "Political Interest"))
+
+# Reorder the group factor to ensure 'low' is left and 'high' is right
+sum_data$group <- factor(sum_data$group, levels = c("low", "high"))
+
+# Create the stacked bar plot
+sum_plot = ggplot(sum_data, aes(fill = group, y = total_value, x = type)) + 
+  geom_bar(position = position_dodge(width = 0.9), stat = "identity") +
+  scale_fill_manual(values = colors, labels = c("Low group", "High group")) +
+  theme_ipsum() +
+  theme(
+    axis.title.y = element_text(size = 14), # Match size of x-axis labels
+    plot.title = element_text(hjust = 0.5),
+    legend.title = element_text(size = 12, face = "bold"),
+    legend.position = "bottom",
+    axis.text.x = element_text(size = 14) # Match size of y-axis label
+  ) +
+  xlab("") +
+  ylab("Mean R2") +
+  labs(
+    title = "Mean R2 by group",
+    fill = "Group"
+  )
+```
+
+```{r}
+#patchwork
+
+Figure_3_1 = plot_income + plot_educ 
+
+Figure_3_2 = plot_pint + sum_plot
+
+Figure_3 = Figure_3_1 / Figure_3_2
+
+
+ggsave(here("Output", "Article", "Figure_3.png"), Figure_3, width = 10, height = 8)
+```
+
+
+### NCT (not used atm)
+
+```{r}
+if (fast_running==0) {
+  
+######
+#educ#
+######
+  
+  # educ
+educ_low_estimate = estimateNetwork(educ_low, default = "EBICglasso")
+
+educ_high_estimate = estimateNetwork(educ_high, default = "EBICglasso")
+
+nct_educ <- NCT(educ_low_estimate, educ_high_estimate, 
+                  it = 10000, 
+                  test.edges = TRUE, 
+                  edges = "all", 
+                  verbose = TRUE)
+#Save 
+save(nct_educ, file = here("Input", "NCT", "nct_educ.RData"))
+
+########
+#income#
+########
+
+# income
+income_low_estimate = estimateNetwork(income_low, default = "EBICglasso")
+
+income_high_estimate = estimateNetwork(income_high, default = "EBICglasso")
+
+nct_income <- NCT(income_low_estimate, income_high_estimate, 
+                  it = 10000, 
+                  test.edges = TRUE, 
+                  edges = "all", 
+                  verbose = TRUE)
+
+#Save 
+save(nct_income, file = here("Input", "NCT", "nct_income.RData"))
+
+
+#########
+##p_int##
+#########
+
+# p_int
+p_int_low_estimate = estimateNetwork(p_int_low, default = "EBICglasso")
+
+p_int_high_estimate = estimateNetwork(p_int_high, default = "EBICglasso")
+
+nct_p_int <- NCT(p_int_low, p_int_high, 
+                  it = 10000, 
+                  test.edges = TRUE, 
+                  edges = "all", 
+                  verbose = TRUE)
+
+#Save 
+save(nct_p_int, file = here("Input", "NCT", "nct_p_int.RData"))
+
+} else {
+  
+  #Boots
+load(file = here("Input", "NCT", "nct_educ.RData"))
+load(file = here("Input", "NCT", "nct_income.RData"))
+load(file = here("Input", "NCT", "nct_p_int.RData"))
+}
+```
+
+
+### Bootstrap 
+
+#### pcor
+```{r}
+# Pcor boots
+
+if (fast_running==0) {
+
+#######
+#educ##
+#######
+
+#low
+df.boot_educ_l <- bootnet(educ_low, nBoots = 10000, nCores = 8,
+                     default = "EBICglasso")
+
+#high
+df.boot_educ_h <- bootnet(educ_high, nBoots = 10000, nCores = 8,
+                     default = "EBICglasso")
+
+#Save Bootnets
+save(df.boot_educ_l,df.boot_educ_h,
+     file = here("Input", "Boots", "boots_educ.RData"))
+
+########
+#income#
+########
+
+#low
+df.boot_income_l <- bootnet(income_low, nBoots = 10000, nCores = 8,
+                     default = "EBICglasso")
+
+#high
+df.boot_income_h <- bootnet(income_high, nBoots = 10000, nCores = 8,
+                     default = "EBICglasso")
+
+#Save Bootnets
+save(df.boot_income_l,df.boot_income_h,
+     file = here("Input", "Boots", "boots_income.RData"))
+
+#########
+##p_int##
+#########
+
+#low
+df.boot_p_int_l <- bootnet(p_int_low, nBoots = 10000, nCores = 8,
+                     default = "EBICglasso")
+
+#high
+df.boot_p_int_h <- bootnet(p_int_high, nBoots = 10000, nCores = 8,
+                     default = "EBICglasso")
+
+#Save Bootnets
+save(df.boot_p_int_l,df.boot_p_int_h,
+     file = here("Input", "Boots", "boots_p_int.RData"))
+
+} else {
+  
+  #Boots
+load(file = here("Input", "Boots", "boots_educ.RData"))
+load(file = here("Input", "Boots", "boots_income.RData"))
+load(file = here("Input", "Boots", "boots_p_int.RData"))
+}
+```
+
+#### Cor
+
+```{r}
+# cor boots
+
+if (fast_running==0) {
+
+#######
+#educ##
+#######
+
+#low
+df.boot_educ_l_cor <- bootnet(educ_low, nBoots = 10000, nCores = 8,
+                     default = "cor", type = "nonparametric",
+                     corMethod = "cor_auto", corArgs = list(
+                        npn.SKEPTIC = T,
+                        ordinalLevelMax = 7, 
+                        forcePD = TRUE,
+                        missing = "pairwise",
+                        verbose = FALSE),
+                        computeCentrality = FALSE)
+
+#high
+df.boot_educ_h_cor <- bootnet(educ_high, nBoots = 10000, nCores = 8,
+                     default = "cor", type = "nonparametric",
+                     corMethod = "cor_auto", corArgs = list(
+                        npn.SKEPTIC = T,
+                        ordinalLevelMax = 7, 
+                        forcePD = TRUE,
+                        missing = "pairwise",
+                        verbose = FALSE),
+                        computeCentrality = FALSE)
+
+#Save Bootnets
+save(df.boot_educ_l_cor,df.boot_educ_h_cor,
+     file = here("Input", "Boots", "boots_educ_cor.RData"))
+
+########
+#income#
+########
+
+#low
+df.boot_income_l_cor <- bootnet(income_low, nBoots = 10000, nCores = 8,
+                     default = "cor", type = "nonparametric",
+                     corMethod = "cor_auto", corArgs = list(
+                        npn.SKEPTIC = T,
+                        ordinalLevelMax = 7, 
+                        forcePD = TRUE,
+                        missing = "pairwise",
+                        verbose = FALSE),
+                        computeCentrality = FALSE)
+
+#high
+df.boot_income_h_cor <- bootnet(income_high, nBoots = 10000, nCores = 8,
+                     default = "cor", type = "nonparametric",
+                     corMethod = "cor_auto", corArgs = list(
+                        npn.SKEPTIC = T,
+                        ordinalLevelMax = 7, 
+                        forcePD = TRUE,
+                        missing = "pairwise",
+                        verbose = FALSE),
+                        computeCentrality = FALSE)
+
+#Save Bootnets
+save(df.boot_income_l_cor,df.boot_income_h_cor,
+     file = here("Input", "Boots", "boots_income_cor.RData"))
+
+#########
+##p_int##
+#########
+
+#low
+df.boot_p_int_l_cor <- bootnet(p_int_low, nBoots = 10000, nCores = 8,
+                     default = "cor", type = "nonparametric",
+                     corMethod = "cor_auto", corArgs = list(
+                        npn.SKEPTIC = T,
+                        ordinalLevelMax = 7, 
+                        forcePD = TRUE,
+                        missing = "pairwise",
+                        verbose = FALSE),
+                        computeCentrality = FALSE)
+
+#high
+df.boot_p_int_h_cor <- bootnet(p_int_high, nBoots = 10000, nCores = 8,
+                     default = "cor", type = "nonparametric",
+                     corMethod = "cor_auto", corArgs = list(
+                        npn.SKEPTIC = T,
+                        ordinalLevelMax = 7, 
+                        forcePD = TRUE,
+                        missing = "pairwise",
+                        verbose = FALSE),
+                        computeCentrality = FALSE)
+
+#Save Bootnets
+save(df.boot_p_int_l_cor,df.boot_p_int_h_cor,
+     file = here("Input", "Boots", "boots_p_int_cor.RData"))
+
+} else {
+  
+  #Boots
+load(file = here("Input", "Boots", "boots_educ_cor.RData"))
+load(file = here("Input", "Boots", "boots_income_cor.RData"))
+load(file = here("Input", "Boots", "boots_p_int_cor.RData"))
+}
+```
+
+### Boot graphs
+
+#### pcor
+
+```{r}
+#Data from matrices
+
+# Define a function to calculate the mean of non-zero cells in a list of matrices
+calculate_nonzero_mean <- function(df_boot) {
+  # Create an empty list to store the matrices
+  matrix_list <- list()
+  
+  # Extract matrices
+  for (i in 1:10000) {
+    matrix_list[[i]] <- df_boot[["boots"]][[i]][["graph"]]
+  }
+  
+  # Create an empty vector to store the mean values
+  mean_values <- numeric(10000)
+  
+  # Loop through each matrix in matrix_list
+  for (i in 1:10000) {
+    # Calculate the mean of the non-zero elements of the matrix
+    mean_value <- mean(matrix_list[[i]][matrix_list[[i]] != 0])
+    
+    # Store the mean value in the vector
+    mean_values[i] <- mean_value
+  }
+  
+  return(mean_values)
+}
+
+# Calculate mean values for all datasets
+cons_educ_l <- calculate_nonzero_mean(df.boot_educ_l)
+cons_educ_h <- calculate_nonzero_mean(df.boot_educ_h)
+
+cons_income_l <- calculate_nonzero_mean(df.boot_income_l)
+cons_income_h <- calculate_nonzero_mean(df.boot_income_h)
+
+cons_p_int_l <- calculate_nonzero_mean(df.boot_p_int_l)
+cons_p_int_h <- calculate_nonzero_mean(df.boot_p_int_h)
+```
+
+```{r}
+# Plot
+# Create vectors for the factors
+educ = factor(c(rep("Low", 10000), rep("High", 10000)), levels=c("Low", "High"))
+income = factor(c(rep("Low", 10000), rep("High", 10000)), levels=c("Low", "High"))
+pint = factor(c(rep("Low", 10000), rep("High", 10000)), levels=c("Low", "High"))
+
+# Create data frames for the graphs
+mcon_educ <- data.frame(const_val = c(cons_educ_l, cons_educ_h), educ = educ)
+mcon_income <- data.frame(const_val = c(cons_income_l, cons_income_h), income = income)
+mcon_pint <- data.frame(const_val = c(cons_p_int_l, cons_p_int_h), pint = pint)
+
+# Calculate quantile-based confidence intervals (90% CI) for each
+mcon_educ_summary <- mcon_educ %>%
+  group_by(educ) %>%
+  summarise(
+    m = mean(const_val),
+    ymin = quantile(const_val, 0.025),
+    ymax = quantile(const_val, 0.975)
+  )
+
+mcon_income_summary <- mcon_income %>%
+  group_by(income) %>%
+  summarise(
+    m = mean(const_val),
+    ymin = quantile(const_val, 0.025),
+    ymax = quantile(const_val, 0.975)
+  )
+
+mcon_pint_summary <- mcon_pint %>%
+  group_by(pint) %>%
+  summarise(
+    m = mean(const_val),
+    ymin = quantile(const_val, 0.025),
+    ymax = quantile(const_val, 0.975)
+  )
+
+# Create the plots
+H1 <- ggplot() +
+  geom_violin(data = mcon_pint, aes(x = pint, y = const_val), 
+              scale = "count", width = 0.6, fill = "#5b5b5b") +
+  geom_errorbar(data = mcon_pint_summary, aes(x = pint, ymin = ymin, ymax = ymax), 
+                width = 0.2, linewidth = 0.7, color = "black") +
+  ylab("Average Tightness") +
+  xlab("Political Interest") +
+  theme(axis.title.x = element_text(), legend.position = "none")
+
+H2 <- ggplot() +
+  geom_violin(data = mcon_educ, aes(x = educ, y = const_val), 
+              scale = "count", width = 0.6, fill = "#5b5b5b") +
+  geom_errorbar(data = mcon_educ_summary, aes(x = educ, ymin = ymin, ymax = ymax), 
+                width = 0.2, linewidth = 0.7, color = "black") +
+  ylab("Average Tightness") +
+  xlab("Education") +
+  theme(axis.title.x = element_text(), legend.position = "none")
+
+H3 <- ggplot() +
+  geom_violin(data = mcon_income, aes(x = income, y = const_val), 
+              scale = "count", width = 0.6, fill = "#5b5b5b") +
+  geom_errorbar(data = mcon_income_summary, aes(x = income, ymin = ymin, ymax = ymax), 
+                width = 0.2, linewidth = 0.7, color = "black") +
+  ylab("Average Tightness") +
+  xlab("Income") +
+  theme(axis.title.x = element_text(), legend.position = "none")
+
+# Print the plots
+print(H1)
+print(H2)
+print(H3)
+```
+#### cor
+
+```{r}
+#Data from matrices
+
+# Define a function to calculate the mean of non-zero cells in a list of matrices
+calculate_nonzero_mean <- function(df_boot) {
+  # Create an empty list to store the matrices
+  matrix_list <- list()
+  
+  # Extract matrices
+  for (i in 1:10000) {
+    matrix_list[[i]] <- df_boot[["boots"]][[i]][["graph"]]
+  }
+  
+  # Create an empty vector to store the mean values
+  mean_values <- numeric(10000)
+  
+  # Loop through each matrix in matrix_list
+  for (i in 1:10000) {
+    # Extract the non-zero elements of the matrix
+    non_zero_elements <- matrix_list[[i]][matrix_list[[i]] != 0]
+    
+    # Calculate the mean of the non-zero elements
+    mean_value <- mean(non_zero_elements)
+    
+    # Store the mean value in the vector
+    mean_values[i] <- mean_value
+  }
+  
+  return(mean_values)
+}
+
+# Calculate mean values for all datasets
+cons_educ_l_cor <- calculate_nonzero_mean(df.boot_educ_l_cor)
+cons_educ_h_cor <- calculate_nonzero_mean(df.boot_educ_h_cor)
+
+cons_income_l_cor <- calculate_nonzero_mean(df.boot_income_l_cor)
+cons_income_h_cor <- calculate_nonzero_mean(df.boot_income_h_cor)
+
+cons_p_int_l_cor <- calculate_nonzero_mean(df.boot_p_int_l_cor)
+cons_p_int_h_cor <- calculate_nonzero_mean(df.boot_p_int_h_cor)
+```
+
+```{r}
+# Plot
+# Create vectors for the factors
+educ = factor(c(rep("Low", 10000), rep("High", 10000)), levels=c("Low", "High"))
+income = factor(c(rep("Low", 10000), rep("High", 10000)), levels=c("Low", "High"))
+pint = factor(c(rep("Low", 10000), rep("High", 10000)), levels=c("Low", "High"))
+
+# Create data frames for the graphs
+mcon_educ <- data.frame(const_val = c(cons_educ_l_cor, cons_educ_h_cor), educ = educ)
+mcon_income <- data.frame(const_val = c(cons_income_l_cor, cons_income_h_cor), income = income)
+mcon_pint <- data.frame(const_val = c(cons_p_int_l_cor, cons_p_int_h_cor), pint = pint)
+
+# Calculate quantile-based confidence intervals (90% CI) for each
+mcon_educ_summary <- mcon_educ %>%
+  group_by(educ) %>%
+  summarise(
+    m = mean(const_val),
+    ymin = quantile(const_val, 0.025),
+    ymax = quantile(const_val, 0.975)
+  )
+
+mcon_income_summary <- mcon_income %>%
+  group_by(income) %>%
+  summarise(
+    m = mean(const_val),
+    ymin = quantile(const_val, 0.025),
+    ymax = quantile(const_val, 0.975)
+  )
+
+mcon_pint_summary <- mcon_pint %>%
+  group_by(pint) %>%
+  summarise(
+    m = mean(const_val),
+    ymin = quantile(const_val, 0.025),
+    ymax = quantile(const_val, 0.975)
+  )
+
+# Create the plots
+H1 <- ggplot() +
+  geom_violin(data = mcon_pint, aes(x = pint, y = const_val), 
+              scale = "count", width = 0.6, fill = "#5b5b5b") +
+  geom_errorbar(data = mcon_pint_summary, aes(x = pint, ymin = ymin, ymax = ymax), 
+                width = 0.2, linewidth = 0.7, color = "black") +
+  ylab("Average Tightness") +
+  xlab("Political Interest") +
+  theme(axis.title.x = element_text(), legend.position = "none")
+
+H2 <- ggplot() +
+  geom_violin(data = mcon_educ, aes(x = educ, y = const_val), 
+              scale = "count", width = 0.6, fill = "#5b5b5b") +
+  geom_errorbar(data = mcon_educ_summary, aes(x = educ, ymin = ymin, ymax = ymax), 
+                width = 0.2, linewidth = 0.7, color = "black") +
+  ylab("Average Tightness") +
+  xlab("Education") +
+  theme(axis.title.x = element_text(), legend.position = "none")
+
+H3 <- ggplot() +
+  geom_violin(data = mcon_income, aes(x = income, y = const_val), 
+              scale = "count", width = 0.6, fill = "#5b5b5b") +
+  geom_errorbar(data = mcon_income_summary, aes(x = income, ymin = ymin, ymax = ymax), 
+                width = 0.2, linewidth = 0.7, color = "black") +
+  ylab("Average Tightness") +
+  xlab("Income") +
+  theme(axis.title.x = element_text(), legend.position = "none")
+
+# Print the plots
+print(H1)
+print(H2)
+print(H3)
+```
+
+## H3
+
+```{r}
+#data as matrix
+IPBS = as.matrix(IPBS)
+
+#Fit moderated mgmg
+mgm_mod <- mgm(data = IPBS,
+               type = rep("g", 11),
+               level = rep(1, 11),
+               lambdaSel = "EBIC",
+               ruleReg = "OR",
+               moderators = 11, 
+               threshold = "none", 
+               pbar = FALSE)
+```
+
+```{r}
+#access scale of l-r (every variable is mean-centered and sd=1)
+tb <- table(scale(IPBS[,11]))
+names(tb) <- round(as.numeric(names(tb)), 2)
+barplot(tb, axes=FALSE, xlab="", ylim=c(0, 250))
+axis(2, las=2, c(0, 50, 100, 150, 200, 250))
+
+#the interesting values are dx: 8; m5s: 3; sin = 2; other = 5; they are well populated
+```
+
+```{r}
+#conditioning on the moderator, interesting values are 2, 3, 5, 8 of v 11 (l-r)
+cond2 <- condition(object = mgm_mod, 
+                   values = list('11' = 2))
+
+cond3 <- condition(object = mgm_mod, 
+                   values = list('11' = 3))
+
+cond5 <- condition(object = mgm_mod, 
+                   values = list('11' = 5))
+
+cond8 <- condition(object = mgm_mod, 
+                   values = list('11' = 8))
+
+#these are now 4 different pairwise models, in which l-r is fixed at 4 diff values
+```
+
+### Network plot
+
+```{r}
+#plot with 3 levels and fixed layout
+Graph_cond_2 = qgraph(cond2$pairwise$wadj)
+Graph_cond_3 = qgraph(cond3$pairwise$wadj)
+Graph_cond_5 = qgraph(cond5$pairwise$wadj)
+Graph_cond_8 = qgraph(cond8$pairwise$wadj)
+
+#multiplot
+jpeg(here("Output", "Article", "mnm.jpg"), 
+    height = 12000, width = 12000, quality = 1000)
+
+L<-averageLayout(Graph_cond_2, Graph_cond_3, Graph_cond_5, Graph_cond_8, layout = "spring")
+lmat <- matrix(1:4, 2)
+lo <- layout(lmat, width = c(1, 1))
+
+set.seed(1)
+Graph_cond_2 = qgraph(cond2$pairwise$wadj, layout = L,
+            labels = shortnames_11,
+            groups = mgm_groups, color = mgm_colors, 
+            legend=F, title = "L-R = 2", title.cex = 12,
+            edge.color=cond2$pairwise$edgecolor_cb,
+            borders = T, vsize=10, esize = 15)
+
+set.seed(1)
+Graph_cond_3 = qgraph(cond3$pairwise$wadj, layout = L,
+            labels = shortnames_11,  
+            groups = mgm_groups, color = mgm_colors, 
+            legend=F, title = "L-R = 3", title.cex = 12,
+            edge.color=cond3$pairwise$edgecolor_cb,
+            borders = T, vsize=10, esize = 15)
+
+set.seed(1)
+Graph_cond_5 = qgraph(cond5$pairwise$wadj, layout = L,
+            labels = shortnames_11,  
+            groups = mgm_groups, color = mgm_colors, 
+            legend=F, title = "L-R = 5", title.cex = 12,
+            edge.color=cond5$pairwise$edgecolor_cb,
+            borders = T, vsize=10, esize = 15)
+
+set.seed(1)
+Graph_cond_8 = qgraph(cond8$pairwise$wadj, layout = L,
+            labels = shortnames_11,  
+            groups = mgm_groups, color = mgm_colors, 
+            legend=F, title = "L-R = 8", title.cex = 12,
+            edge.color=cond8$pairwise$edgecolor_cb,
+            borders = T, vsize=10, esize = 15)
+
+dev.off()
+```
+
+### Descriptives
+
+```{r}
+#Inspect interaction parameters 
+mgm_mod$interactions$indicator
+#32 pairwise interactions
+#6 3-way interactions (moderation)
+
+#acces a pairwise interaction between variables 1 (c_adopt) and 5 (c_immig) can be obtained like this:
+showInteraction(object = mgm_mod, int = c(1,5))
+
+#access a 3-way interaction
+showInteraction(object = mgm_mod, int = c(1,5,11))
+
+#redis_f redis_p = 0.140
+#mod = 0.009
+# if l-r 0, redis_f redis_p =  0.140 + 0.009 * 0 = 0.140
+# if l-r 3, redis_f redis_p =  0.140 + 0.009 * 3 = 0.167
+# if l-r 7, redis_f redis_p =  0.140 + 0.009 * 7 = 0.203
+# if l-r 10, redis_f redis_p = 0.140 + 0.009 * 10 = 0.230
+
+# the other interactions:
+showInteraction(object = mgm_mod, int = c(2,5,11))
+showInteraction(object = mgm_mod, int = c(2,6,11))
+showInteraction(object = mgm_mod, int = c(2,9,11))
+showInteraction(object = mgm_mod, int = c(3,5,11))
+showInteraction(object = mgm_mod, int = c(9,10,11))
+```
+
+```{r}
+#descriptives of MNM: mean edge value
+ cond2_desc = cond2$pairwise$wadj[-11, ] 
+ cond2_desc = cond2_desc[, -11] 
+ cond2_desc = as.vector(cond2_desc[cond2_desc != 0])
+(cond2_desc = mean(cond2_desc))
+
+ cond3_desc = cond3$pairwise$wadj[-11, ] 
+ cond3_desc = cond3_desc[, -11] 
+ cond3_desc = as.vector(cond3_desc[cond3_desc != 0])
+(cond3_desc = mean(cond3_desc))
+
+ cond5_desc = cond5$pairwise$wadj[-11, ] 
+ cond5_desc = cond5_desc[, -11] 
+ cond5_desc = as.vector(cond5_desc[cond5_desc != 0])
+(cond5_desc = mean(cond5_desc))
+
+ cond8_desc = cond8$pairwise$wadj[-11, ] 
+ cond8_desc = cond8_desc[, -11] 
+ cond8_desc = as.vector(cond8_desc[cond8_desc != 0])
+(cond8_desc = mean(cond8_desc))
+
+#number of non zero edges (always 29)
+cond2_no0 = cond2$pairwise$wadj[-11,] 
+cond2_no0 = cond2_no0[, -11] 
+cond2_no0 = length(cond2_no0[cond2_no0 != 0])/2
+
+cond3_no0 = cond3$pairwise$wadj[-11,] 
+cond3_no0 = cond3_no0[, -11] 
+cond3_no0 = length(cond3_no0[cond3_no0 != 0])/2
+
+cond5_no0 = cond5$pairwise$wadj[-11,] 
+cond5_no0 = cond5_no0[, -11] 
+cond5_no0 = length(cond5_no0[cond5_no0 != 0])/2
+
+cond8_no0 = cond8$pairwise$wadj[-11,] 
+cond8_no0 = cond8_no0[, -11] 
+cond8_no0 = length(cond8_no0[cond8_no0 != 0])/2
+ 
+#signs: 
+cond2_desc_s = na.omit(as.vector(cond2$pairwise$signs))
+(sum(cond2_desc_s == -1)/2)
+(sum(cond2_desc_s == 1)/2)
+
+cond3_desc_s = na.omit(as.vector(cond3$pairwise$signs))
+(sum(cond3_desc_s == -1)/2)
+(sum(cond3_desc_s == 1)/2)
+
+cond5_desc_s = na.omit(as.vector(cond5$pairwise$signs))
+(sum(cond5_desc_s == -1)/2)
+(sum(cond5_desc_s == 1)/2)
+
+cond8_desc_s = na.omit(as.vector(cond8$pairwise$signs))
+(sum(cond8_desc_s == -1)/2)
+(sum(cond8_desc_s == 1)/2)
+```
+

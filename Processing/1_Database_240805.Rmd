@@ -11,7 +11,7 @@ output: html_document
 #packages
 library("pacman")
 p_load(tidyverse, here, sjlabelled, stringr, glue, janitor, haven, stargazer, 
-       ltm, skimr, readxl, naniar, conflicted)
+       ltm, skimr, readxl, naniar, conflicted, sjPlot)
 
 #remove scientific notation
 options(scipen=999)
@@ -87,9 +87,24 @@ W5 = W5 %>%
          across(e_redis, ~ 7 - .),
          across(e_mwage, ~ 7 - .),
          across(e_citin, ~ 7 - .))
+```
 
-#Check here for descriptives
 
+```{r}
+# descriptives
+descriptives <- W5 %>%
+  summarize(across(everything(), list(mean = ~mean(., na.rm = TRUE), SD = ~sd(., na.rm = TRUE)))) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "value") %>%
+  mutate(statistic = ifelse(grepl("mean", variable), "mean", "SD")) %>%
+  separate(variable, into = c("variable_name"), sep = "_mean|_SD") %>%
+  pivot_wider(names_from = statistic, values_from = value)
+
+#save
+sjPlot::tab_df(descriptives, file = here("Output", "Supplement", "Tab_1.doc"))
+```
+
+
+```{r}
 # Standardize attitudinal variables
 W5 = W5 %>% 
   mutate(across(c(c_adopt:e_busin), ~ scale(.) %>% as.vector))
